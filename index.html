@@ -2,516 +2,700 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8"/>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FICHAS CASTRA PET</title>
-    <!-- Bootstrap -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="./css/style.css" />
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="Sistema de cadastro de animais Projeto - Castra Pet">
+    <title>CASTRA PET - Sistema de Cadastro</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CSS Personalizado -->
+    <link rel="stylesheet" href="./styles.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="./favicon.ico">
 </head>
-<body id="checkout-page">
-    <!-- Modal de carregamento e mensagens -->
-    <div id="fade" class="hide">
-        <div id="loader" class="spinner-border text-info hide" role="status">
-            <span class="visually-hidden">Loading...</span>
+<body>
+    <!-- Overlay de Carregamento -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner-border text-light" role="status">
+            <span class="visually-hidden">Carregando...</span>
         </div>
-        <div id="message" class="hide">
-            <div class="alert alert-light" role="alert">
-                <h4>Mensagem:</h4>
-                <p id="message-text"></p>
-                <button id="close-message" type="button" class="btn btn-secondary">Fechar</button>
+        <p id="loading-text" class="mt-3">Processando...</p>
+    </div>
+
+    <!-- Modal de Confirmação -->
+    <div id="confirmation-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modal-title">Confirmação</h5>
+                <button type="button" class="btn-close" onclick="Modal.fechar()"></button>
+            </div>
+            <div class="modal-body">
+                <p id="modal-message">Tem certeza que deseja continuar?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="Modal.fechar()">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="modal-confirm-btn">Confirmar</button>
             </div>
         </div>
     </div>
-    
-    <!-- Container principal do formulário -->
-    <div class="container mt-4 mb-4">
-        <div class="row justify-content-center">
-            <div class="col-12 col-lg-10">
-                <!-- Cabeçalho -->
-                <div class="text-center mb-5">
-                    <h1 class="text-primary">CASTRA PET</h1>
-                    <p class="lead text-muted">Sistema de Cadastro de Animais</p>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Header -->
+    <header class="app-header">
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <div class="container">
+                <a class="navbar-brand" href="#">
+                    <i class="fas fa-paw me-2"></i>
+                    <span class="brand-text">CASTRA PET</span>
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <button class="nav-link btn btn-link" onclick="Historico.abrir()">
+                                <i class="fas fa-history me-1"></i> Histórico
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link btn btn-link" onclick="Configuracoes.abrir()">
+                                <i class="fas fa-cog me-1"></i> Configurações
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" onclick="Ajuda.abrir()">
+                                <i class="fas fa-question-circle me-1"></i> Ajuda
+                            </a>
+                        </li>
+                    </ul>
                 </div>
-                
-                <!-- Formulário principal -->
-                <div class="card shadow-lg">
-                    <div class="card-body p-4">
-                        <!-- Informações do Animal -->
-                        <div class="mb-5">
-                            <h2 class="text-center mb-4 border-bottom pb-2">
-                                <i class="fas fa-paw mr-2"></i>Informações do Animal
-                            </h2>
-                            
-                            <div class="row">
-                                <!-- Microchip -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="microchip" class="form-label">Microchip:</label>
-                                    <input type="text" class="form-control" id="microchip" 
-                                           placeholder="Número do microchip" maxlength="15">
-                                </div>
-                                
-                                <!-- Nome do Animal -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="animal" class="form-label">Nome do Animal:</label>
-                                    <input type="text" class="form-control" id="animal" 
-                                           placeholder="Nome do animal" required>
-                                </div>
-                            </div>
-                            
-                            <div class="row">
-                                <!-- Espécie -->
-                                <div class="col-md-4 mb-3">
-                                    <label for="especie" class="form-label">Espécie:</label>
-                                    <select class="form-control" id="especie" required>
-                                        <option value="" selected disabled>Selecione a espécie</option>
-                                        <option value="CÃO">CÃO</option>
-                                        <option value="GATO">GATO</option>
-                                    </select>
-                                </div>
-                                
-                                <!-- Sexo -->
-                                <div class="col-md-4 mb-3">
-                                    <label for="sexo" class="form-label">Sexo:</label>
-                                    <select class="form-control" id="sexo" required>
-                                        <option value="" selected disabled>Selecione o sexo</option>
-                                        <option value="MACHO">MACHO</option>
-                                        <option value="FÊMEA">FÊMEA</option>
-                                    </select>
-                                </div>
-                                
-                                <!-- Pelagem -->
-                                <div class="col-md-4 mb-3">
-                                    <label for="pelagem" class="form-label">Pelagem:</label>
-                                    <select class="form-control" id="pelagem" required>
-                                        <option value="" selected disabled>Selecione a pelagem</option>
-                                        <option value="PRETO">PRETO</option>
-                                        <option value="BRANCO">BRANCO</option>
-                                        <option value="CARAMELO">CARAMELO</option>
-                                        <option value="MARROM">MARROM</option>
-                                        <option value="MESCLADO">MESCLADO</option>
-                                        <option value="CINZA">CINZA</option>
-                                        <option value="AMARELO">AMARELO</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <div class="row">
-                                <!-- Idade -->
-                                <div class="col-md-4 mb-3">
-                                    <label for="idade" class="form-label">Idade:</label>
-                                    <select class="form-control" id="idade" required>
-                                        <option value="" selected disabled>Selecione a idade</option>
-                                        <option value="-6MESES">Até 6 meses</option>
-                                        <option value="6-12MESES">6 a 12 meses</option>
-                                        <option value="1a2ANOS">1 a 2 anos</option>
-                                        <option value="3a4ANOS">3 a 4 anos</option>
-                                        <option value="5a6ANOS">5 a 6 anos</option>
-                                        <option value="7a8ANOS">7 a 8 anos</option>
-                                        <option value="+8ANOS">Mais de 8 anos</option>
-                                    </select>
-                                </div>
-                                
-                                <!-- Porte -->
-                                <div class="col-md-4 mb-3">
-                                    <label for="porte" class="form-label">Porte:</label>
-                                    <select class="form-control" id="porte" required>
-                                        <option value="" selected disabled>Selecione o porte</option>
-                                        <option value="PEQUENO">Pequeno (até 8kg)</option>
-                                        <option value="MEDIO">Médio (8 a 15kg)</option>
-                                        <option value="GRANDE">Grande (acima de 15kg)</option>
-                                    </select>
-                                </div>
-                                
-                                <!-- Raça -->
-                                <div class="col-md-4 mb-3">
-                                    <label for="raca" class="form-label">Raça definida?</label>
-                                    <select class="form-control" id="raca" required>
-                                        <option value="" selected disabled>Selecione uma opção</option>
-                                        <option value="SIM">SIM</option>
-                                        <option value="NÃO">NÃO</option>
-                                        <option value="SRD">SRD (Sem Raça Definida)</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <!-- Castrado -->
-                            <div class="row">
-                                <div class="col-md-4 mb-3">
-                                    <label for="castra" class="form-label">Castrado:</label>
-                                    <select class="form-control" id="castra" required>
-                                        <option value="" selected disabled>Selecione uma opção</option>
-                                        <option value="SIM">SIM</option>
-                                        <option value="NÃO">NÃO</option>
-                                    </select>
-                                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="container-fluid main-content">
+        <div class="row">
+            <!-- Sidebar -->
+            <aside class="col-lg-2 sidebar">
+                <div class="sidebar-sticky">
+                    <div class="sidebar-header">
+                        <h6><i class="fas fa-tachometer-alt me-2"></i>Navegação</h6>
+                    </div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <button class="nav-link active" onclick="navegarPara('formulario')">
+                                <i class="fas fa-edit me-2"></i> Novo Cadastro
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" onclick="navegarPara('buscar')">
+                                <i class="fas fa-search me-2"></i> Buscar
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" onclick="navegarPara('relatorios')">
+                                <i class="fas fa-chart-bar me-2"></i> Relatórios
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" onclick="navegarPara('exportar')">
+                                <i class="fas fa-file-export me-2"></i> Exportar
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <div class="sidebar-footer mt-4">
+                        <div class="card bg-dark">
+                            <div class="card-body p-3">
+                                <h6 class="card-title">Status</h6>
+                                <p class="card-text small" id="status-info">
+                                    <i class="fas fa-database me-1"></i>
+                                    <span id="total-cadastros">0</span> cadastros
+                                </p>
+                                <button class="btn btn-sm btn-outline-light w-100" onclick="Utils.limparCache()">
+                                    <i class="fas fa-trash-alt me-1"></i> Limpar Cache
+                                </button>
                             </div>
                         </div>
-                        
-                        <!-- Informações do Tutor -->
-                        <div class="mb-5">
-                            <h2 class="text-center mb-4 border-bottom pb-2">
-                                <i class="fas fa-user mr-2"></i>Informações do Tutor
-                            </h2>
-                            
-                            <div class="row">
-                                <!-- Nome do Tutor -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="tutor" class="form-label">Nome do Tutor:</label>
-                                    <input type="text" class="form-control" id="tutor" 
-                                           placeholder="Nome completo do tutor" required>
-                                </div>
-                                
-                                <!-- CPF -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="cpf" class="form-label">CPF:</label>
-                                    <input type="text" class="form-control" id="cpf" 
-                                           placeholder="000.000.000-00" required>
-                                </div>
-                            </div>
-                            
-                            <div class="row">
-                                <!-- RG -->
-                                <div class="col-md-4 mb-3">
-                                    <label for="rg" class="form-label">RG:</label>
-                                    <input type="text" class="form-control" id="rg" 
-                                           placeholder="Número do RG" required>
-                                </div>
-                                
-                                <!-- Celular -->
-                                <div class="col-md-4 mb-3">
-                                    <label for="cel" class="form-label">Celular:</label>
-                                    <input type="text" class="form-control" id="cel" 
-                                           placeholder="(00) 00000-0000" required>
-                                </div>
-                                
-                                <!-- Email -->
-                                <div class="col-md-4 mb-3">
-                                    <label for="email" class="form-label">Email:</label>
-                                    <input type="email" class="form-control" id="email" 
-                                           placeholder="email@exemplo.com">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Endereço -->
-                        <div class="mb-5">
-                            <h2 class="text-center mb-4 border-bottom pb-2">
-                                <i class="fas fa-home mr-2"></i>Endereço
-                            </h2>
-                            
-                            <!-- CEP -->
-                            <div class="row mb-4">
-                                <div class="col-md-4">
-                                    <label for="cep" class="form-label">CEP:</label>
-                                    <div class="input-group">
-                                        <input type="text" class="form-control" id="cep" 
-                                               placeholder="00000-000" maxlength="9" required>
-                                        <div class="input-group-append">
-                                            <button class="btn btn-outline-secondary" type="button" 
-                                                    onclick="buscarCEP()">Buscar</button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Conteúdo Dinâmico -->
+            <div class="col-lg-10 content-area">
+                <!-- Seção do Formulário -->
+                <section id="formulario-section" class="content-section active">
+                    <div class="section-header">
+                        <h1><i class="fas fa-paw me-2"></i>Cadastro de Animal</h1>
+                        <p class="lead">Preencha todas as informações abaixo para cadastrar um novo animal</p>
+                    </div>
+
+                    <div class="row">
+                        <!-- Progresso -->
+                        <div class="col-12 mb-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="progress-steps">
+                                        <div class="step active" data-step="1">
+                                            <div class="step-circle">1</div>
+                                            <div class="step-label">Animal</div>
+                                        </div>
+                                        <div class="step" data-step="2">
+                                            <div class="step-circle">2</div>
+                                            <div class="step-label">Tutor</div>
+                                        </div>
+                                        <div class="step" data-step="3">
+                                            <div class="step-circle">3</div>
+                                            <div class="step-label">Endereço</div>
+                                        </div>
+                                        <div class="step" data-step="4">
+                                            <div class="step-circle">4</div>
+                                            <div class="step-label">Revisão</div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            
-                            <!-- Logradouro e Número -->
-                            <div class="row">
-                                <div class="col-md-8 mb-3">
-                                    <label for="logradouro" class="form-label">Logradouro:</label>
-                                    <input type="text" class="form-control" id="logradouro" 
-                                           placeholder="Rua, Avenida, etc." required>
-                                </div>
-                                
-                                <div class="col-md-4 mb-3">
-                                    <label for="numero" class="form-label">Número:</label>
-                                    <input type="text" class="form-control" id="numero" 
-                                           placeholder="Nº" required>
-                                </div>
-                            </div>
-                            
-                            <!-- Complemento e Bairro -->
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="complemento" class="form-label">Complemento:</label>
-                                    <input type="text" class="form-control" id="complemento" 
-                                           placeholder="Apto, Casa, etc.">
-                                </div>
-                                
-                                <div class="col-md-6 mb-3">
-                                    <label for="bairro" class="form-label">Bairro:</label>
-                                    <input type="text" class="form-control" id="bairro" 
-                                           placeholder="Bairro" required>
-                                </div>
-                            </div>
-                            
-                            <!-- Cidade e Estado -->
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="cidade" class="form-label">Cidade:</label>
-                                    <input type="text" class="form-control" id="cidade" 
-                                           placeholder="Cidade" required>
-                                </div>
-                                
-                                <div class="col-md-6 mb-3">
-                                    <label for="estado" class="form-label">Estado:</label>
-                                    <select class="form-control" id="estado" required>
-                                        <option value="" selected disabled>Selecione o estado</option>
-                                        <option value="AC">Acre</option>
-                                        <option value="AL">Alagoas</option>
-                                        <option value="AP">Amapá</option>
-                                        <option value="AM">Amazonas</option>
-                                        <option value="BA">Bahia</option>
-                                        <option value="CE">Ceará</option>
-                                        <option value="DF">Distrito Federal</option>
-                                        <option value="ES">Espírito Santo</option>
-                                        <option value="GO">Goiás</option>
-                                        <option value="MA">Maranhão</option>
-                                        <option value="MT">Mato Grosso</option>
-                                        <option value="MS">Mato Grosso do Sul</option>
-                                        <option value="MG">Minas Gerais</option>
-                                        <option value="PA">Pará</option>
-                                        <option value="PB">Paraíba</option>
-                                        <option value="PR">Paraná</option>
-                                        <option value="PE">Pernambuco</option>
-                                        <option value="PI">Piauí</option>
-                                        <option value="RJ">Rio de Janeiro</option>
-                                        <option value="RN">Rio Grande do Norte</option>
-                                        <option value="RS">Rio Grande do Sul</option>
-                                        <option value="RO">Rondônia</option>
-                                        <option value="RR">Roraima</option>
-                                        <option value="SC">Santa Catarina</option>
-                                        <option value="SP">São Paulo</option>
-                                        <option value="SE">Sergipe</option>
-                                        <option value="TO">Tocantins</option>
-                                    </select>
-                                </div>
-                            </div>
                         </div>
-                        
-                        <!-- Botões de ação -->
-                        <div class="text-center mt-4">
-                            <button type="button" class="btn btn-primary btn-lg mr-3" onclick="validarESalvar()">
-                                <i class="fas fa-save mr-2"></i>Salvar Cadastro
-                            </button>
-                            <button type="button" class="btn btn-secondary btn-lg" onclick="limparFormulario()">
-                                <i class="fas fa-broom mr-2"></i>Limpar
-                            </button>
+
+                        <!-- Formulário -->
+                        <div class="col-12">
+                            <div class="card main-form-card">
+                                <div class="card-body">
+                                    <form id="cadastro-form" novalidate>
+                                        <!-- Passo 1: Informações do Animal -->
+                                        <div class="form-step active" data-step="1">
+                                            <h3 class="step-title">
+                                                <i class="fas fa-paw me-2"></i>Informações do Animal
+                                            </h3>
+                                            
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <label for="microchip" class="form-label">
+                                                        <i class="fas fa-microchip me-1"></i>Microchip
+                                                        <span class="text-muted small">(Opcional)</span>
+                                                    </label>
+                                                    <div class="input-group">
+                                                        <input type="text" 
+                                                               class="form-control" 
+                                                               id="microchip" 
+                                                               maxlength="15"
+                                                               placeholder="Ex: 123456789012345">
+                                                        <button class="btn btn-outline-secondary" type="button"
+                                                                onclick="Gerador.gerarMicrochip()">
+                                                            <i class="fas fa-random"></i>
+                                                        </button>
+                                                    </div>
+                                                    <div class="form-text">
+                                                        Número único de identificação do animal
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-6">
+                                                    <label for="animal" class="form-label required">
+                                                        <i class="fas fa-dog me-1"></i>Nome do Animal
+                                                    </label>
+                                                    <input type="text" 
+                                                           class="form-control" 
+                                                           id="animal" 
+                                                           required
+                                                           placeholder="Ex: Rex, Luna, Thor">
+                                                    <div class="invalid-feedback">
+                                                        Por favor, informe o nome do animal.
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-4">
+                                                    <label for="especie" class="form-label required">
+                                                        <i class="fas fa-crow me-1"></i>Espécie
+                                                    </label>
+                                                    <select class="form-select" id="especie" required>
+                                                        <option value="" selected disabled>Selecione...</option>
+                                                        <option value="CÃO">Cão</option>
+                                                        <option value="GATO">Gato</option>
+                                                        <option value="OUTRO">Outro</option>
+                                                    </select>
+                                                    <div class="invalid-feedback">
+                                                        Selecione a espécie do animal.
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-4">
+                                                    <label for="sexo" class="form-label required">
+                                                        <i class="fas fa-venus-mars me-1"></i>Sexo
+                                                    </label>
+                                                    <select class="form-select" id="sexo" required>
+                                                        <option value="" selected disabled>Selecione...</option>
+                                                        <option value="MACHO">Macho</option>
+                                                        <option value="FÊMEA">Fêmea</option>
+                                                    </select>
+                                                    <div class="invalid-feedback">
+                                                        Selecione o sexo do animal.
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-4">
+                                                    <label for="pelagem" class="form-label required">
+                                                        <i class="fas fa-palette me-1"></i>Pelagem
+                                                    </label>
+                                                    <select class="form-select" id="pelagem" required>
+                                                        <option value="" selected disabled>Selecione...</option>
+                                                        <option value="PRETO">Preto</option>
+                                                        <option value="BRANCO">Branco</option>
+                                                        <option value="CARAMELO">Caramelo</option>
+                                                        <option value="MARROM">Marrom</option>
+                                                        <option value="MESCLADO">Mesclado</option>
+                                                        <option value="CINZA">Cinza</option>
+                                                        <option value="AMARELO">Amarelo</option>
+                                                        <option value="TRICOLOR">Tricolor</option>
+                                                        <option value="OUTRO">Outra</option>
+                                                    </select>
+                                                    <div class="invalid-feedback">
+                                                        Selecione a cor da pelagem.
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-4">
+                                                    <label for="idade" class="form-label required">
+                                                        <i class="fas fa-birthday-cake me-1"></i>Idade
+                                                    </label>
+                                                    <select class="form-select" id="idade" required>
+                                                        <option value="" selected disabled>Selecione...</option>
+                                                        <option value="FILHOTE">Filhote (até 6 meses)</option>
+                                                        <option value="JOVEM">Jovem (6-12 meses)</option>
+                                                        <option value="ADULTO_JOVEM">Adulto Jovem (1-2 anos)</option>
+                                                        <option value="ADULTO">Adulto (3-6 anos)</option>
+                                                        <option value="SENIOR">Sênior (7+ anos)</option>
+                                                    </select>
+                                                    <div class="invalid-feedback">
+                                                        Selecione a faixa etária.
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-4">
+                                                    <label for="porte" class="form-label required">
+                                                        <i class="fas fa-weight me-1"></i>Porte
+                                                    </label>
+                                                    <select class="form-select" id="porte" required>
+                                                        <option value="" selected disabled>Selecione...</option>
+                                                        <option value="PEQUENO">Pequeno (até 8kg)</option>
+                                                        <option value="MEDIO">Médio (8-15kg)</option>
+                                                        <option value="GRANDE">Grande (15-25kg)</option>
+                                                        <option value="GIGANTE">Gigante (25kg+)</option>
+                                                    </select>
+                                                    <div class="invalid-feedback">
+                                                        Selecione o porte do animal.
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-4">
+                                                    <label for="raca" class="form-label required">
+                                                        <i class="fas fa-dna me-1"></i>Raça Definida
+                                                    </label>
+                                                    <select class="form-select" id="raca" required>
+                                                        <option value="" selected disabled>Selecione...</option>
+                                                        <option value="SIM">Sim</option>
+                                                        <option value="NÃO">Não</option>
+                                                        <option value="SRD">SRD</option>
+                                                    </select>
+                                                    <div class="invalid-feedback">
+                                                        Selecione uma opção para raça.
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-4">
+                                                    <label for="castra" class="form-label required">
+                                                        <i class="fas fa-clinic-medical me-1"></i>Castrado
+                                                    </label>
+                                                    <select class="form-select" id="castra" required>
+                                                        <option value="" selected disabled>Selecione...</option>
+                                                        <option value="SIM">Sim</option>
+                                                        <option value="NÃO">Não</option>
+                                                    </select>
+                                                    <div class="invalid-feedback">
+                                                        Selecione se o animal é castrado.
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-8">
+                                                    <label for="observacoes" class="form-label">
+                                                        <i class="fas fa-sticky-note me-1"></i>Observações
+                                                    </label>
+                                                    <textarea class="form-control" 
+                                                              id="observacoes" 
+                                                              rows="2"
+                                                              placeholder="Informações adicionais sobre o animal..."></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Passo 2: Informações do Tutor -->
+                                        <div class="form-step" data-step="2">
+                                            <h3 class="step-title">
+                                                <i class="fas fa-user me-2"></i>Informações do Tutor
+                                            </h3>
+                                            
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <label for="tutor" class="form-label required">
+                                                        <i class="fas fa-user-circle me-1"></i>Nome do Tutor
+                                                    </label>
+                                                    <input type="text" 
+                                                           class="form-control" 
+                                                           id="tutor" 
+                                                           required
+                                                           placeholder="Nome completo do responsável">
+                                                    <div class="invalid-feedback">
+                                                        Informe o nome completo do tutor.
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-6">
+                                                    <label for="cpf" class="form-label required">
+                                                        <i class="fas fa-id-card me-1"></i>CPF
+                                                    </label>
+                                                    <input type="text" 
+                                                           class="form-control cpf-mask" 
+                                                           id="cpf" 
+                                                           required
+                                                           placeholder="000.000.000-00">
+                                                    <div class="invalid-feedback cpf-feedback">
+                                                        CPF inválido.
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-4">
+                                                    <label for="rg" class="form-label required">
+                                                        <i class="fas fa-address-card me-1"></i>RG
+                                                    </label>
+                                                    <input type="text" 
+                                                           class="form-control rg-mask" 
+                                                           id="rg" 
+                                                           required
+                                                           placeholder="00.000.000-0">
+                                                    <div class="invalid-feedback">
+                                                        Informe o número do RG.
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-4">
+                                                    <label for="celular" class="form-label required">
+                                                        <i class="fas fa-mobile-alt me-1"></i>Celular
+                                                    </label>
+                                                    <input type="text" 
+                                                           class="form-control phone-mask" 
+                                                           id="celular" 
+                                                           required
+                                                           placeholder="(00) 00000-0000">
+                                                    <div class="invalid-feedback">
+                                                        Informe um número de celular válido.
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-4">
+                                                    <label for="telefone" class="form-label">
+                                                        <i class="fas fa-phone me-1"></i>Telefone Fixo
+                                                    </label>
+                                                    <input type="text" 
+                                                           class="form-control phone-mask" 
+                                                           id="telefone"
+                                                           placeholder="(00) 0000-0000">
+                                                </div>
+
+                                                <div class="col-md-6">
+                                                    <label for="email" class="form-label">
+                                                        <i class="fas fa-envelope me-1"></i>E-mail
+                                                    </label>
+                                                    <input type="email" 
+                                                           class="form-control email-validation" 
+                                                           id="email"
+                                                           placeholder="exemplo@email.com">
+                                                    <div class="invalid-feedback email-feedback">
+                                                        Informe um e-mail válido.
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-6">
+                                                    <label for="profissao" class="form-label">
+                                                        <i class="fas fa-briefcase me-1"></i>Profissão
+                                                    </label>
+                                                    <input type="text" 
+                                                           class="form-control" 
+                                                           id="profissao"
+                                                           placeholder="Profissão do tutor">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Passo 3: Endereço -->
+                                        <div class="form-step" data-step="3">
+                                            <h3 class="step-title">
+                                                <i class="fas fa-home me-2"></i>Endereço
+                                            </h3>
+                                            
+                                            <div class="row g-3">
+                                                <div class="col-md-4">
+                                                    <label for="cep" class="form-label required">
+                                                        <i class="fas fa-mail-bulk me-1"></i>CEP
+                                                    </label>
+                                                    <div class="input-group">
+                                                        <input type="text" 
+                                                               class="form-control cep-mask" 
+                                                               id="cep" 
+                                                               required
+                                                               placeholder="00000-000">
+                                                        <button class="btn btn-outline-primary" 
+                                                                type="button"
+                                                                onclick="ViaCEP.buscar()">
+                                                            <i class="fas fa-search"></i>
+                                                        </button>
+                                                    </div>
+                                                    <div class="invalid-feedback">
+                                                        Informe um CEP válido.
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-8">
+                                                    <label for="logradouro" class="form-label required">
+                                                        <i class="fas fa-road me-1"></i>Logradouro
+                                                    </label>
+                                                    <input type="text" 
+                                                           class="form-control" 
+                                                           id="logradouro" 
+                                                           required
+                                                           placeholder="Rua, Avenida, Praça...">
+                                                    <div class="invalid-feedback">
+                                                        Informe o logradouro.
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-2">
+                                                    <label for="numero" class="form-label required">
+                                                        <i class="fas fa-hashtag me-1"></i>Número
+                                                    </label>
+                                                    <input type="text" 
+                                                           class="form-control" 
+                                                           id="numero" 
+                                                           required
+                                                           placeholder="Nº">
+                                                    <div class="invalid-feedback">
+                                                        Informe o número.
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-4">
+                                                    <label for="complemento" class="form-label">
+                                                        <i class="fas fa-building me-1"></i>Complemento
+                                                    </label>
+                                                    <input type="text" 
+                                                           class="form-control" 
+                                                           id="complemento"
+                                                           placeholder="Apto, Bloco, Casa...">
+                                                </div>
+
+                                                <div class="col-md-6">
+                                                    <label for="bairro" class="form-label required">
+                                                        <i class="fas fa-map-marker-alt me-1"></i>Bairro
+                                                    </label>
+                                                    <input type="text" 
+                                                           class="form-control" 
+                                                           id="bairro" 
+                                                           required
+                                                           placeholder="Nome do bairro">
+                                                    <div class="invalid-feedback">
+                                                        Informe o bairro.
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-6">
+                                                    <label for="cidade" class="form-label required">
+                                                        <i class="fas fa-city me-1"></i>Cidade
+                                                    </label>
+                                                    <input type="text" 
+                                                           class="form-control" 
+                                                           id="cidade" 
+                                                           required
+                                                           placeholder="Nome da cidade">
+                                                    <div class="invalid-feedback">
+                                                        Informe a cidade.
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-6">
+                                                    <label for="estado" class="form-label required">
+                                                        <i class="fas fa-flag me-1"></i>Estado
+                                                    </label>
+                                                    <select class="form-select" id="estado" required>
+                                                        <option value="" selected disabled>Selecione...</option>
+                                                        <option value="AC">Acre</option>
+                                                        <option value="AL">Alagoas</option>
+                                                        <option value="AP">Amapá</option>
+                                                        <option value="AM">Amazonas</option>
+                                                        <option value="BA">Bahia</option>
+                                                        <option value="CE">Ceará</option>
+                                                        <option value="DF">Distrito Federal</option>
+                                                        <option value="ES">Espírito Santo</option>
+                                                        <option value="GO">Goiás</option>
+                                                        <option value="MA">Maranhão</option>
+                                                        <option value="MT">Mato Grosso</option>
+                                                        <option value="MS">Mato Grosso do Sul</option>
+                                                        <option value="MG">Minas Gerais</option>
+                                                        <option value="PA">Pará</option>
+                                                        <option value="PB">Paraíba</option>
+                                                        <option value="PR">Paraná</option>
+                                                        <option value="PE">Pernambuco</option>
+                                                        <option value="PI">Piauí</option>
+                                                        <option value="RJ">Rio de Janeiro</option>
+                                                        <option value="RN">Rio Grande do Norte</option>
+                                                        <option value="RS">Rio Grande do Sul</option>
+                                                        <option value="RO">Rondônia</option>
+                                                        <option value="RR">Roraima</option>
+                                                        <option value="SC">Santa Catarina</option>
+                                                        <option value="SP">São Paulo</option>
+                                                        <option value="SE">Sergipe</option>
+                                                        <option value="TO">Tocantins</option>
+                                                    </select>
+                                                    <div class="invalid-feedback">
+                                                        Selecione o estado.
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-12">
+                                                    <label for="referencia" class="form-label">
+                                                        <i class="fas fa-map-pin me-1"></i>Ponto de Referência
+                                                    </label>
+                                                    <input type="text" 
+                                                           class="form-control" 
+                                                           id="referencia"
+                                                           placeholder="Próximo a...">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Passo 4: Revisão -->
+                                        <div class="form-step" data-step="4">
+                                            <h3 class="step-title">
+                                                <i class="fas fa-check-circle me-2"></i>Revisão do Cadastro
+                                            </h3>
+                                            
+                                            <div class="card review-card">
+                                                <div class="card-body">
+                                                    <div id="review-content"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Navegação entre passos -->
+                                        <div class="form-navigation mt-5">
+                                            <div class="d-flex justify-content-between">
+                                                <button type="button" 
+                                                        class="btn btn-secondary btn-prev"
+                                                        onclick="Formulario.voltarPasso()">
+                                                    <i class="fas fa-arrow-left me-2"></i>Voltar
+                                                </button>
+                                                
+                                                <button type="button" 
+                                                        class="btn btn-primary btn-next"
+                                                        onclick="Formulario.avancarPasso()">
+                                                    Próximo <i class="fas fa-arrow-right ms-2"></i>
+                                                </button>
+                                                
+                                                <button type="button" 
+                                                        class="btn btn-success btn-save"
+                                                        onclick="Cadastro.salvar()"
+                                                        style="display: none;">
+                                                    <i class="fas fa-save me-2"></i>Salvar Cadastro
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                </section>
+
+                <!-- Seção de Busca -->
+                <section id="buscar-section" class="content-section">
+                    <div class="section-header">
+                        <h1><i class="fas fa-search me-2"></i>Buscar Cadastros</h1>
+                        <p class="lead">Encontre cadastros por nome, microchip ou tutor</p>
+                    </div>
+                    <!-- Conteúdo da busca será carregado dinamicamente -->
+                </section>
+
+                <!-- Seção de Relatórios -->
+                <section id="relatorios-section" class="content-section">
+                    <div class="section-header">
+                        <h1><i class="fas fa-chart-bar me-2"></i>Relatórios</h1>
+                        <p class="lead">Estatísticas e relatórios do sistema</p>
+                    </div>
+                    <!-- Conteúdo dos relatórios será carregado dinamicamente -->
+                </section>
+
+                <!-- Seção de Exportação -->
+                <section id="exportar-section" class="content-section">
+                    <div class="section-header">
+                        <h1><i class="fas fa-file-export me-2"></i>Exportar Dados</h1>
+                        <p class="lead">Exporte dados em diferentes formatos</p>
+                    </div>
+                    <!-- Conteúdo da exportação será carregado dinamicamente -->
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>CASTRA PET</h6>
+                    <p class="small">Sistema de Cadastro de Animais</p>
+                    <p class="small mb-0">
+                        <i class="fas fa-phone me-1"></i> +351 965 563 654 |
+                        <i class="fas fa-envelope me-1 ms-3"></i> mannowell@hotmail.com
+                    </p>
                 </div>
-                
-                <!-- Informações de contato -->
-                <div class="text-center mt-4 text-muted">
-                    <p>CASTRA PET - Sistema de Cadastro de Animais</p>
-                    <p>Em caso de dúvidas, entre em contato: (00) 0000-0000</p>
+                <div class="col-md-6 text-md-end">
+                    <p class="small mb-1">
+                        <i class="fas fa-code me-1"></i> Desenvolvido com 
+                        <i class="fas fa-heart text-danger mx-1"></i> para animais
+                    </p>
+                    <p class="small mb-0">
+                        <i class="fas fa-sync-alt me-1"></i> 
+                        Última atualização: <span id="ultima-atualizacao">--:--</span>
+                    </p>
                 </div>
             </div>
         </div>
-    </div>
-    
+    </footer>
+
     <!-- Scripts -->
-    <script src="./js/script.js"></script>
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Font Awesome -->
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-    <script>
-        // Função para exibir mensagens
-        function mostrarMensagem(texto, tipo = 'info') {
-            const mensagemDiv = document.getElementById('message-text');
-            const fadeDiv = document.getElementById('fade');
-            const messageDiv = document.getElementById('message');
-            
-            mensagemDiv.textContent = texto;
-            messageDiv.className = tipo === 'erro' ? 'alert alert-danger' : 'alert alert-success';
-            fadeDiv.classList.remove('hide');
-            messageDiv.classList.remove('hide');
-        }
-        
-        // Fechar mensagem
-        document.getElementById('close-message').addEventListener('click', function() {
-            document.getElementById('fade').classList.add('hide');
-            document.getElementById('message').classList.add('hide');
-        });
-        
-        // Máscaras de entrada
-        document.addEventListener('DOMContentLoaded', function() {
-            // Máscara para CPF
-            $('#cpf').mask('000.000.000-00');
-            
-            // Máscara para celular
-            $('#cel').mask('(00) 00000-0000');
-            
-            // Máscara para CEP
-            $('#cep').mask('00000-000');
-            
-            // Máscara para RG
-            $('#rg').mask('00.000.000-0');
-        });
-        
-        // Função para buscar CEP
-        function buscarCEP() {
-            const cep = document.getElementById('cep').value.replace(/\D/g, '');
-            
-            if (cep.length !== 8) {
-                mostrarMensagem('CEP inválido! Digite 8 números.', 'erro');
-                return;
-            }
-            
-            mostrarCarregamento(true);
-            
-            fetch(`https://viacep.com.br/ws/${cep}/json/`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.erro) {
-                        mostrarMensagem('CEP não encontrado!', 'erro');
-                        return;
-                    }
-                    
-                    document.getElementById('logradouro').value = data.logradouro;
-                    document.getElementById('bairro').value = data.bairro;
-                    document.getElementById('cidade').value = data.localidade;
-                    document.getElementById('estado').value = data.uf;
-                    
-                    mostrarMensagem('Endereço encontrado com sucesso!');
-                    document.getElementById('numero').focus();
-                })
-                .catch(error => {
-                    mostrarMensagem('Erro ao buscar CEP. Tente novamente.', 'erro');
-                })
-                .finally(() => {
-                    mostrarCarregamento(false);
-                });
-        }
-        
-        // Função para mostrar/ocultar carregamento
-        function mostrarCarregamento(mostrar) {
-            const loader = document.getElementById('loader');
-            const fade = document.getElementById('fade');
-            
-            if (mostrar) {
-                fade.classList.remove('hide');
-                loader.classList.remove('hide');
-            } else {
-                fade.classList.add('hide');
-                loader.classList.add('hide');
-            }
-        }
-        
-        // Função para validar e salvar
-        function validarESalvar() {
-            // Coletar todos os dados
-            const dados = {
-                microchip: document.getElementById('microchip').value,
-                animal: document.getElementById('animal').value,
-                especie: document.getElementById('especie').value,
-                sexo: document.getElementById('sexo').value,
-                pelagem: document.getElementById('pelagem').value,
-                idade: document.getElementById('idade').value,
-                porte: document.getElementById('porte').value,
-                raca: document.getElementById('raca').value,
-                castra: document.getElementById('castra').value,
-                tutor: document.getElementById('tutor').value,
-                cpf: document.getElementById('cpf').value,
-                rg: document.getElementById('rg').value,
-                cel: document.getElementById('cel').value,
-                email: document.getElementById('email').value,
-                cep: document.getElementById('cep').value,
-                logradouro: document.getElementById('logradouro').value,
-                numero: document.getElementById('numero').value,
-                complemento: document.getElementById('complemento').value,
-                bairro: document.getElementById('bairro').value,
-                cidade: document.getElementById('cidade').value,
-                estado: document.getElementById('estado').value,
-                dataCadastro: new Date().toLocaleString('pt-BR')
-            };
-            
-            // Validar campos obrigatórios
-            const camposObrigatorios = [
-                'animal', 'especie', 'sexo', 'pelagem', 'idade', 
-                'porte', 'raca', 'castra', 'tutor', 'cpf', 'rg', 
-                'cel', 'cep', 'logradouro', 'numero', 'bairro', 
-                'cidade', 'estado'
-            ];
-            
-            for (const campo of camposObrigatorios) {
-                if (!dados[campo] || dados[campo].trim() === '') {
-                    mostrarMensagem(`Por favor, preencha o campo: ${campo.replace(/([A-Z])/g, ' $1').trim()}`, 'erro');
-                    document.getElementById(campo).focus();
-                    return;
-                }
-            }
-            
-            // Validar email se fornecido
-            if (dados.email && !validarEmail(dados.email)) {
-                mostrarMensagem('Por favor, insira um email válido.', 'erro');
-                document.getElementById('email').focus();
-                return;
-            }
-            
-            // Salvar dados
-            salvarDadosCSV(dados);
-        }
-        
-        // Função para validar email
-        function validarEmail(email) {
-            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return re.test(email);
-        }
-        
-        // Função para salvar dados em CSV
-        function salvarDadosCSV(dados) {
-            mostrarCarregamento(true);
-            
-            // Criar cabeçalho CSV
-            const cabecalho = Object.keys(dados).join(';');
-            const linha = Object.values(dados).join(';');
-            const csvContent = cabecalho + '\n' + linha;
-            
-            // Criar blob e fazer download
-            const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            
-            link.setAttribute('href', url);
-            link.setAttribute('download', `castra_pet_${dados.animal}_${Date.now()}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            setTimeout(() => {
-                mostrarCarregamento(false);
-                mostrarMensagem('Cadastro salvo com sucesso! Arquivo CSV baixado.');
-                
-                // Opcional: limpar formulário após salvar
-                // limparFormulario();
-            }, 1000);
-        }
-        
-        // Função para limpar formulário
-        function limparFormulario() {
-            if (confirm('Tem certeza que deseja limpar todos os campos?')) {
-                const form = document.querySelector('.card-body');
-                const inputs = form.querySelectorAll('input, select, textarea');
-                
-                inputs.forEach(input => {
-                    if (input.type !== 'button') {
-                        input.value = '';
-                    }
-                });
-                
-                // Resetar selects para primeira opção
-                const selects = form.querySelectorAll('select');
-                selects.forEach(select => {
-                    select.selectedIndex = 0;
-                });
-                
-                mostrarMensagem('Formulário limpo com sucesso!');
-            }
-        }
-    </script>
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Biblioteca de Máscaras -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+    
+    <!-- Biblioteca para Exportação -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <!-- Scripts do Sistema -->
+    <script src="./config.js"></script>
+    <script src="./utils.js"></script>
+    <script src="./validacoes.js"></script>
+    <script src="./sistema-operacional.js"></script>
+    <script src="./sistema-ui-dados.js"></script>
 </body>
 </html>
